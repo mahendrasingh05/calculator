@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Race Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-title {
+            font-size: 36px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .game-screen {
+            margin: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+        }
+
+        canvas {
+            background-color: #333;
+            border-radius: 10px;
+        }
+
+        .score {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .game-controls {
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">Bike Race</h1>
+        <div class="game-screen">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+        </div>
+        <div class="score">
+            <p>Score: <span id="score">0</span></p>
+        </div>
+        <div class="game-controls">
+            <button id="startBtn">Start Game</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreDisplay = document.getElementById("score");
+        const startBtn = document.getElementById("startBtn");
+
+        let bikeX = 100;
+        let bikeY = 300;
+        let bikeSpeed = 5;
+        let bikeWidth = 30;
+        let bikeHeight = 50;
+        let roadWidth = 600;
+        let roadX = 100;
+        let obstacles = [];
+        let score = 0;
+        let gameStarted = false;
+
+        const bike = {
+            x: bikeX,
+            y: bikeY,
+            width: bikeWidth,
+            height: bikeHeight,
+            speed: bikeSpeed
+        };
+
+        // Function to generate random obstacles
+        function generateObstacle() {
+            const obstacleWidth = Math.random() * (50 - 30) + 30; // Width between 30 and 50
+            const obstacleHeight = Math.random() * (50 - 30) + 30; // Height between 30 and 50
+            const obstacleX = canvas.width;
+            const obstacleY = Math.random() * (canvas.height - obstacleHeight);
+            obstacles.push({ x: obstacleX, y: obstacleY, width: obstacleWidth, height: obstacleHeight });
+        }
+
+        // Function to update game state
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRoad();
+            drawBike();
+            drawObstacles();
+            moveBike();
+            moveObstacles();
+            checkCollision();
+            updateScore();
+        }
+
+        // Function to draw the bike
+        function drawBike() {
+            ctx.fillStyle = "#4CAF50";
+            ctx.fillRect(bike.x, bike.y, bike.width, bike.height);
+        }
+
+        // Function to draw the road
+        function drawRoad() {
+            ctx.fillStyle = "#999";
+            ctx.fillRect(roadX, 0, roadWidth, canvas.height);
+        }
+
+        // Function to draw obstacles
+        function drawObstacles() {
+            ctx.fillStyle = "#FF5733";
+            for (let i = 0; i < obstacles.length; i++) {
+                ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+            }
+        }
+
+        // Function to move the bike
+        function moveBike() {
+            if (gameStarted) {
+                if (leftPressed && bike.x > roadX) bike.x -= bike.speed;
+                if (rightPressed && bike.x < roadX + roadWidth - bike.width) bike.x += bike.speed;
+                if (upPressed && bike.y > 0) bike.y -= bike.speed;
+                if (downPressed && bike.y < canvas.height - bike.height) bike.y += bike.speed;
+            }
+        }
+
+        // Function to move obstacles
+        function moveObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].x -= 2;
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                    score++;
+                }
+            }
+            if (Math.random() < 0.01) generateObstacle();
+        }
+
+        // Function to check for collisions
+        function checkCollision() {
+            for (let i = 0; i < obstacles.length; i++) {
+                if (bike.x < obstacles[i].x + obstacles[i].width &&
+                    bike.x + bike.width > obstacles[i].x &&
+                    bike.y < obstacles[i].y + obstacles[i].height &&
+                    bike.y + bike.height > obstacles[i].y) {
+                    endGame();
+                }
+            }
+        }
+
+        // Function to update score
+        function updateScore() {
+            scoreDisplay.innerText = score;
+        }
+
+        // Function to handle keyboard inputs
+        let leftPressed = false;
+        let rightPressed = false;
+        let upPressed = false;
+        let downPressed = false;
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") leftPressed = true;
+            if (e.key === "ArrowRight") rightPressed = true;
+            if (e.key === "ArrowUp") upPressed = true;
+            if (e.key === "ArrowDown") downPressed = true;
+        });
+
+        document.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowLeft") leftPressed = false;
+            if (e.key === "ArrowRight") rightPressed = false;
+            if (e.key === "ArrowUp") upPressed = false;
+            if (e.key === "ArrowDown") downPressed = false;
+        });
+
+        // Function to start the game
+        function startGame() {
+            gameStarted = true;
+            score = 0;
+            bike.x = bikeX;
+            bike.y = bikeY;
+            obstacles = [];
+            gameInterval = setInterval(updateGame, 1000 / 60);
+            startBtn.style.display = "none";
+        }
+
+        // Function to end the game
+        function endGame() {
+            clearInterval(gameInterval);
+            gameStarted = false;
+            startBtn.style.display = "block";
+            startBtn.innerText = "Restart Game";
+        }
+
+        // Add event listener to start the game
+        startBtn.addEventListener("click", () => {
+            if (!gameStarted) {
+                startGame();
+            } else {
+                endGame();
+            }
+        });
+    </script>
+</body>
+</html>
