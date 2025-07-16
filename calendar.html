@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>India 2025 Calendar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f6fc;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .calendar-container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .month-popup {
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      border: 1px solid #ccc;
+      background: #e8f0fe;
+    }
+
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #calendar div {
+      padding: 10px;
+      border-radius: 8px;
+      background: #f0f0f0;
+      min-height: 40px;
+    }
+
+    #calendar .header {
+      font-weight: bold;
+      background: #d1e7ff;
+    }
+
+    .holidays {
+      margin-top: 30px;
+      text-align: left;
+      font-size: 15px;
+      background: #fff5cc;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .holidays h3 {
+      margin-top: 0;
+    }
+
+    .holiday-cell {
+      background: #ffccd5 !important;
+      color: #b30000;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="calendar-container">
+    <h1>2025 Calendar</h1>
+    <select id="monthSelect" class="month-popup">
+      <option value="0">January</option>
+      <option value="1">February</option>
+      <option value="2">March</option>
+      <option value="3">April</option>
+      <option value="4">May</option>
+      <option value="5">June</option>
+      <option value="6">July</option>
+      <option value="7">August</option>
+      <option value="8">September</option>
+      <option value="9">October</option>
+      <option value="10">November</option>
+      <option value="11">December</option>
+    </select>
+
+    <div id="calendar"></div>
+    <div id="holidayList" class="holidays"></div>
+  </div>
+
+  <script>
+    const monthSelect = document.getElementById('monthSelect');
+    const calendar = document.getElementById('calendar');
+    const holidayList = document.getElementById('holidayList');
+
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const holidays2025 = {
+      0: [{ date: 14, name: "Makar Sankranti" }, { date: 26, name: "Republic Day" }],
+      2: [{ date: 29, name: "Holi" }],
+      3: [{ date: 14, name: "Baisakhi" }, { date: 18, name: "Ram Navami" }],
+      4: [{ date: 23, name: "Buddha Purnima" }],
+      7: [{ date: 15, name: "Independence Day" }, { date: 19, name: "Raksha Bandhan" }],
+      9: [{ date: 2, name: "Gandhi Jayanti" }, { date: 11, name: "Dussehra" }],
+      10: [{ date: 1, name: "Diwali" }],
+      11: [{ date: 25, name: "Christmas" }]
+    };
+
+    function renderCalendar(month) {
+      calendar.innerHTML = "";
+      holidayList.innerHTML = "<h3>🎉 National Holidays</h3>";
+
+      const year = 2025;
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Week headers
+      daysOfWeek.forEach(day => {
+        const div = document.createElement("div");
+        div.className = "header";
+        div.innerText = day;
+        calendar.appendChild(div);
+      });
+
+      // Empty blocks before the 1st day
+      for (let i = 0; i < firstDay; i++) {
+        calendar.appendChild(document.createElement("div"));
+      }
+
+      // Calendar dates
+      for (let date = 1; date <= daysInMonth; date++) {
+        const div = document.createElement("div");
+        div.innerText = date;
+
+        const isHoliday = holidays2025[month]?.find(h => h.date === date);
+        if (isHoliday) {
+          div.classList.add("holiday-cell");
+          holidayList.innerHTML += `<p>📍 ${date} ${getMonthName(month)} – ${isHoliday.name}</p>`;
+        }
+
+        calendar.appendChild(div);
+      }
+    }
+
+    function getMonthName(monthIndex) {
+      const names = ["January", "February", "March", "April", "May", "June",
+                     "July", "August", "September", "October", "November", "December"];
+      return names[monthIndex];
+    }
+
+    // Initial load
+    renderCalendar(0);
+    monthSelect.addEventListener('change', (e) => {
+      renderCalendar(parseInt(e.target.value));
+    });
+  </script>
+</body>
+</html>
